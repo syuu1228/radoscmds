@@ -39,7 +39,7 @@ static int open_pool(string& bucket, rados_pool_t *pool)
 
 int main(int argc, const char **argv)
 {
-  int ret;
+  int r;
   std::string bucket(argv[1]);
   rados_pool_t pool;
 
@@ -47,16 +47,26 @@ int main(int argc, const char **argv)
   if (!rados)
     return -ENOMEM;
 
-  ret = rados->initialize(0, NULL);
-  if (ret < 0)
-   return ret;
+  r = rados->initialize(0, NULL);
+  if (r < 0)
+    goto err;
 
-  ret = open_root_pool(&root_pool);
+  r = open_root_pool(&root_pool);
+  if (r < 0)
+    goto err;
 
-  int r = open_pool(bucket, &pool);
-  if (r < 0) return r;
+  r = open_pool(bucket, &pool);
+  if (r < 0)
+    goto err;
 
   r = rados->delete_pool(pool);
-  if (r < 0) return r;
-  return 0;
+  if (r < 0)
+    goto err;
+
+ err:
+  rados->close_pool(pool);
+  rados->close_pool(&root_pool);
+  rados->shutdown();
+  delete rados;
+  return r;
 }

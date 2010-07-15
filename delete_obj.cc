@@ -32,11 +32,17 @@ int open_root_pool(rados_pool_t *pool)
   return r;
 }
 
+static int open_pool(string& bucket, rados_pool_t *pool)
+{
+  return rados->open_pool(bucket.c_str(), pool);
+}
 
 int main(int argc, const char **argv)
 {
   int r;
   std::string bucket(argv[1]);
+  std::string oid(argv[2]);
+  rados_pool_t pool;
 
   rados = new Rados();
   if (!rados)
@@ -50,13 +56,16 @@ int main(int argc, const char **argv)
   if (r < 0)
     goto err;
 
-  r = rados->create(root_pool, bucket, true);
+  r = open_pool(bucket, &pool);
   if (r < 0)
     goto err;
 
-  r = rados->create_pool(bucket.c_str());
+  r = rados->remove(pool, oid);
+  if (r < 0)
+    goto err;
 
  err:
+  rados->close_pool(pool);
   rados->close_pool(&root_pool);
   rados->shutdown();
   delete rados;
