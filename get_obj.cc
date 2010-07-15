@@ -38,8 +38,6 @@ int main(int argc, const char **argv)
   string file_name(argv[3]);
   pool_t pool;
   bufferlist bl;
-  //  off_t off = 0;
-  //  size_t len = 0;
 
   r = rados.initialize(0, NULL);
   if (r < 0)
