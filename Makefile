@@ -1,5 +1,5 @@
 PROGRAMS = create_bucket delete_bucket list_bucket put_obj get_obj delete_obj
-CXXFLAGS =  -Wall -Werror
+CXXFLAGS = -Wall -Werror -D_FILE_OFFSET_BITS=64
 LDFLAGS = -lcrypto -lrados -lcrush
 
 all: $(PROGRAMS)
