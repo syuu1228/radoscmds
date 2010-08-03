@@ -7,26 +7,6 @@ using namespace librados;
 #include <string>
 using namespace std;
 
-#define ROOT_BUCKET ".rgw" //keep this synced to rgw_user.cc::root_bucket!
-
-/**
- * Open the pool used as root for this gateway
- * Returns: 0 on success, -ERR# otherwise.
- */
-int open_root_pool(Rados &rados, pool_t *pool)
-{
-  int r = rados.open_pool(ROOT_BUCKET, pool);
-  if (r < 0) {
-    r = rados.create_pool(ROOT_BUCKET);
-    if (r < 0)
-      return r;
-
-    r = rados.open_pool(ROOT_BUCKET, pool);
-  }
-
-  return r;
-}
-
 #define MAX_ENTRIES 1000
 
 int main(int argc, const char **argv)
@@ -34,14 +14,10 @@ int main(int argc, const char **argv)
   int r;
   Rados rados;
   const char *bucket = argv[1];
-  pool_t root_pool, pool;
+  pool_t pool;
   Rados::ListCtx ctx;
 
   r = rados.initialize(0, NULL);
-  if (r < 0)
-    goto err;
-
-  r = open_root_pool(rados, &root_pool);
   if (r < 0)
     goto err;
 
@@ -64,7 +40,6 @@ int main(int argc, const char **argv)
 
  err:
   rados.close_pool(pool);
-  rados.close_pool(root_pool);
   rados.shutdown();
 
   return r;

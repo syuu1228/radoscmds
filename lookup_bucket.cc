@@ -14,10 +14,6 @@ int main(int argc, const char **argv)
 {
   int r;
   std::string bucket(argv[1]);
-  std::string oid(argv[2]);
-  std::string file_name(argv[3]);
-  rados_pool_t pool;
-  bufferlist bl;
 
   rados = new Rados();
   if (!rados)
@@ -27,20 +23,10 @@ int main(int argc, const char **argv)
   if (r < 0)
     goto err;
 
-  r = rados->open_pool(bucket.c_str(), &pool);
-  if (r < 0)
-    goto err;
-
-  r = bl.read_file(file_name.c_str());
-  if (r < 0)
-    goto err;
-
-  r = rados->write_full(pool, oid, bl);
-  if (r < 0)
-    goto err;
-
+  r = rados->lookup_pool(bucket.c_str());
+  printf("lookup_pool:%d\n", r);
  err:
-  rados->close_pool(pool);
+  rados->shutdown();
   delete rados;
   return r;
 }
